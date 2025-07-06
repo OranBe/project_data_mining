@@ -1,0 +1,7 @@
+# Ignore .env files that contain sensitive information
+.env
+.idea/
+__pycache__/
+data/
+slurm_query_jobs/
+slurm_query_logs/
