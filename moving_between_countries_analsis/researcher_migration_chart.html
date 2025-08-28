@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>R&D spending vs normalized researcher migration</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  body { font-family: 'Assistant', sans-serif; background-color: #f8fafc; }
+</style>
+</head>
+<body class="bg-gray-50">
+  <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+    <div class="bg-white p-6 rounded-2xl shadow-lg">
+      <h1 class="text-2xl sm:text-3xl font-bold text-center text-gray-800 mb-2">R&D spending vs normalized researcher migration</h1>
+      <p class="text-center text-gray-600 mb-6 max-w-3xl mx-auto">
+        The chart shows the relationship between R&D spending and the net migration of researchers, normalized by population, expressed as net per million inhabitants.
+      </p>
+      <div class="w-full h-[500px] md:h-[600px]">
+        <canvas id="researcherMigrationChart"></canvas>
+      </div>
+      <div class="mt-6 pt-4 border-t border-gray-200 text-sm text-gray-500">
+        <h3 class="font-semibold text-lg text-gray-700 mb-2">How to read the chart:</h3>
+        <ul class="list-disc list-inside space-y-1">
+          <li><b>X axis:</b> R&D expenditure as a share of GDP.</li>
+          <li><b>Y axis:</b> Net researcher migration per million inhabitants.</li>
+          <li><b>Lines and points:</b> Each line represents a country over time.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const multiYearData = {"Canada": [{"year": 2000, "r_and_d": 1.85847997665405, "migration_score": 104.47853122607805, "population": 1.0}, {"year": 2010, "r_and_d": 1.82503998279572, "migration_score": 252.4267699177631, "population": 1.0}, {"year": 2015, "r_and_d": 1.69359004497528, "migration_score": 290.635650443818, "population": 1.0}], "China": [{"year": 2000, "r_and_d": 0.893159985542297, "migration_score": 0.7032855632422416, "population": 1.0}, {"year": 2010, "r_and_d": 1.7137199640274, "migration_score": -7.959901473045252, "population": 1.0}, {"year": 2015, "r_and_d": 2.05700993537903, "migration_score": -10.281477831084313, "population": 1.0}], "Germany": [{"year": 2000, "r_and_d": 2.40982007980347, "migration_score": 30.956736616484395, "population": 1.0}, {"year": 2010, "r_and_d": 2.73024010658264, "migration_score": 99.02548310385338, "population": 1.0}, {"year": 2015, "r_and_d": 2.9337899684906, "migration_score": 95.26653027630195, "population": 1.0}], "Israel": [{"year": 2000, "r_and_d": 3.82651996612549, "migration_score": 43.886150421370644, "population": 1.0}, {"year": 2010, "r_and_d": 3.86329007148743, "migration_score": 145.20698882417756, "population": 1.0}, {"year": 2015, "r_and_d": 4.29840993881226, "migration_score": 71.24019999761339, "population": 1.0}], "United Kingdom": [{"year": 2000, "r_and_d": 1.60962998867035, "migration_score": 105.70104037331467, "population": 1.0}, {"year": 2010, "r_and_d": 1.63885998725891, "migration_score": 267.8185999778703, "population": 1.0}, {"year": 2015, "r_and_d": 2.27566003799438, "migration_score": 378.625860373648, "population": 1.0}], "United States": [{"year": 2000, "r_and_d": 2.61982989311218, "migration_score": 36.05724789472401, "population": 1.0}, {"year": 2010, "r_and_d": 2.71444010734558, "migration_score": 108.28493111766394, "population": 1.0}, {"year": 2015, "r_and_d": 2.77327990531921, "migration_score": 144.05165256358478, "population": 1.0}]};
+
+    const colors = ["#3B82F6", "#10B981", "#F97316", "#8B5CF6", "#EF4444", "#F59E0B", "#14B8A6", "#0EA5E9", "#84CC16", "#A855F7"];
+    const datasets = Object.keys(multiYearData).map((country, index) => {
+        const color = colors[index % colors.length];
+        return {
+            label: country,
+            data: multiYearData[country].map(d => ({
+                x: d.r_and_d,
+                y: d.migration_score,
+                year: d.year
+            })),
+            borderColor: color,
+            backgroundColor: color,
+            pointRadius: 6,
+            pointHoverRadius: 9,
+            borderWidth: 2.5,
+            fill: false,
+            tension: 0.1,
+            showLine: true
+        };
+    });
+
+    const ctx = document.getElementById('researcherMigrationChart').getContext('2d');
+    const researcherMigrationChart = new Chart(ctx, {
+        type: 'line',
+        data: { datasets },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: { font: { family: 'Assistant', size: 14, weight: '600' }, color: '#475569' }
+                },
+                tooltip: {
+                    callbacks: {
+                        title: function(context) {
+                            const dataPoint = context[0].raw;
+                            const label = context[0].dataset.label;
+                            return `${label} - ${dataPoint.year}`;
+                        },
+                        label: function(context) {
+                            const dataPoint = context.raw;
+                            return [
+                                `R&D: ${dataPoint.x.toFixed(2)}% of GDP`,
+                                `Normalized migration: ${dataPoint.y.toFixed(1)} per million`
+                            ];
+                        }
+                    },
+                    bodyFont: { family: 'Assistant', size: 14 },
+                    titleFont: { family: 'Assistant', size: 16, weight: 'bold' },
+                    rtl: false,
+                    bodyAlign: 'left',
+                    titleAlign: 'left'
+                }
+            },
+            scales: {
+                x: {
+                    type: 'linear',
+                    position: 'bottom',
+                    title: {
+                        display: true,
+                        text: 'R&D expenditure (% of GDP)',
+                        font: { size: 16, weight: '600', family: 'Assistant' },
+                        color: '#334155'
+                    },
+                    grid: { color: '#e2e8f0' },
+                    ticks: { color: '#475569' }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Net researcher migration per million inhabitants',
+                        font: { size: 16, weight: '600', family: 'Assistant' },
+                        color: '#334155'
+                    },
+                    grid: { color: '#e2e8f0' },
+                    ticks: { color: '#475569' }
+                }
+            }
+        }
+    });
+  </script>
+</body>
+</html>
