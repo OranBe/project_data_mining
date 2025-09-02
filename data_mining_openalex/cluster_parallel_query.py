@@ -52,7 +52,7 @@ def free_connections_exceed(threshold: int = 10) -> bool:
     return bool(row[0])
 
 # ------------------------------------------------------------------
-# NEW 1 – count_lines(): מספר השורות (ל-wc -l אין cost בזיכרון)
+# NEW 1 – count_lines(): number of lines (no memory cost like wc -l)
 # ------------------------------------------------------------------
 def count_lines(file_path: str) -> int:
     """Return number of data lines (excluding header) using `wc -l`."""
@@ -61,8 +61,8 @@ def count_lines(file_path: str) -> int:
     return total
 
 # ------------------------------------------------------------------
-# NEW 2 – iter_id_ranges(): מייצר טווחי (min_id, max_id) ב-Streaming
-#       אין החזקת רשימה שלמה; קורא את הקובץ פעם שנייה בלבד
+# NEW 2 – iter_id_ranges(): yields (min_id, max_id) ranges in streaming
+#       No full list held; reads the file only once more
 # ------------------------------------------------------------------
 def iter_id_ranges(file_path: str, num_subgroups: int):
     """
@@ -116,7 +116,7 @@ def limit_jobs(job_queue: List[str], max_jobs_running: int) -> List[str]:
 
         n_running = len(job_queue)
         # condition 1: much below limit
-        if n_running < max_jobs_running - 50: #40
+        if n_running < max_jobs_running - 50:
             print(f"Jobs finished, {n_running} running jobs remaining.")
             time.sleep(5)  # give scheduler time to update
             return job_queue
@@ -132,7 +132,6 @@ def limit_jobs(job_queue: List[str], max_jobs_running: int) -> List[str]:
             return job_queue
 
         # otherwise wait and retry
-        # print(f"Waiting for jobs to finish... {n_running} running jobs.")
         time.sleep(30)
 
 # ---------------------------------------------------------------
@@ -176,6 +175,7 @@ python data_mining/queries/parallel_queries/q2_get_work_year_institution_country
 
     return script_path
 
+
 # ---------------------------------------------------------------
 # Wrapper – generate SBATCH jobs for all subgroups and submit them
 # ---------------------------------------------------------------
@@ -186,9 +186,6 @@ def submit_subgroup_jobs(index_csv: str, num_subgroups: int, output_dir: str) ->
     job_queue: List[str] = []
 
     for idx, (min_id, max_id) in enumerate(iter_id_ranges(index_csv, num_subgroups), start=1):
-        if idx not in [0, 3626, 3815, 3835, 3865, 3866, 3967, 4013, 4059, 4149, 4196, 4328, 4354, 4464, 4524, 4642, 4772, 4822, 4878, 4921, 4978, 5057, 5270, 5350, 5429, 5463, 5487, 5569, 5645, 5704, 5776, 5923, 5996, 6068, 6139, 6209, 6279, 6412, 6458, 6522, 6612, 6675, 6721, 6779, 6848, 6909, 7033, 7107, 7175, 7185, 7196, 7213, 7231, 7284, 7426, 7516, 7600, 7682, 7723, 7764, 7805, 7846, 7887, 7928, 8009, 8091, 8132, 8173, 8214, 8255, 8296, 8337, 8419, 8501, 8542, 8583, 8624, 8665, 8693, 8695, 8809, 8937, 9034, 9147, 9198, 9200, 9202, 9265, 9306, 9477, 9480, 9482, 9485, 9487, 9493, 9616, 9791, 9840, 9909]:
-        # if idx < 4189:
-            continue
         csv_path   = os.path.join(output_dir, f"subgroup_{idx:03d}.csv")
         script_path = create_query_job(
             subgroup_idx = idx,

@@ -5,7 +5,7 @@
 #SBATCH --time=6-23:59:00                 # Time limit
 #SBATCH --mem=20G                        # Memory requested (20GB)
 #SBATCH --cpus-per-task=5                # Number of CPUs per task
-#SBATCH --mail-user=oranbe@post.bgu.ac.il # User's email for sending job status notifications
+#SBATCH --mail-user=oran@b.ac.il # User's email for sending job status notifications
 #SBATCH --mail-type=BEGIN,END,FAIL        # Conditions for sending the email
 
 # Load Anaconda module
